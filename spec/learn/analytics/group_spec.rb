@@ -4,11 +4,14 @@ require 'simple_segment'
 # Group Analytics
 # https://help.mixpanel.com/hc/en-us/articles/360025333632
 #
-# In Mixpanel account we have CompanyId as an extra custom
-# identifier, after User Id
-# No extra settings in Segment account were necessary
+# 'companyId' was a group identifier in our Mixpanel account
+#
+# Make sure Segment has the same Group Identifier Traits
+# in Settings for destinations/mixpanel
 ##
-RSpec.describe 'Group Analytics' do
+RSpec.describe 'Mixpanel Group Analytics' do
+  let(:group_identifier) { :companyId }
+
   let(:analytics) {
     SimpleSegment::Client.new(
       write_key: ENV['SEGMENT_WRITE_KEY'],
@@ -16,7 +19,7 @@ RSpec.describe 'Group Analytics' do
     )
   }
 
-  def create_event(user_id:, company_id:, event_name: 'Test Event Created')
+  def identify(user_id)
     analytics.identify(
       user_id: user_id,
       traits: {
@@ -24,23 +27,50 @@ RSpec.describe 'Group Analytics' do
         first_name: user_id
       }
     )
-    analytics.track(
+  end
+
+  def group(user_id, group_id)
+    analytics.group(
       user_id: user_id,
-      event: event_name,
-      properties: {
-        companyId: company_id
+      group_id: group_id,
+      traits: {
+        group_identifier => group_id,
+        trait1: rand(1..20),
+        trait2: rand(20..40)
       }
     )
   end
 
-  it "creates event which can be grouped by Company ID" do
-    create_event(user_id: 'test_user_1', company_id: 'test_company_1')
+  def track(user_id, company_id)
+    analytics.track(
+      user_id: user_id,
+      event: 'Test Event Created',
+      properties: {
+        group_identifier => company_id,
+      }
+    )
+  end
 
-    create_event(user_id: 'test_user_2', company_id: 'test_company_2')
-    create_event(user_id: 'test_user_3', company_id: 'test_company_2')
+  it 'creates user profiles' do
+    identify('test_user_1')
+    identify('test_user_2')
+    identify('test_user_3')
+  end
 
-    create_event(user_id: 'test_user_4', company_id: 'test_company_3')
-    create_event(user_id: 'test_user_5', company_id: 'test_company_3')
-    create_event(user_id: 'test_user_6', company_id: 'test_company_3')
+  it 'creates company profiles' do
+    group('test_user_1', 'test_company_1')
+    group('test_user_2', 'test_company_2')
+    group('test_user_3', 'test_company_3')
+  end
+
+  it "creates events per company" do
+    track('test_user_1', 'test_company_1')
+
+    track('test_user_2', 'test_company_2')
+    track('test_user_3', 'test_company_2')
+
+    track('test_user_4', 'test_company_3')
+    track('test_user_5', 'test_company_3')
+    track('test_user_6', 'test_company_3')
   end
 end
