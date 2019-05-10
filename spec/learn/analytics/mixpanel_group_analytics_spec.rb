@@ -52,18 +52,24 @@ RSpec.describe 'Mixpanel Group Analytics' do
   end
 
   it 'creates user profiles' do
+    # Check resutls in Users -> Explore -> by User Id
     identify('test_user_1')
     identify('test_user_2')
     identify('test_user_3')
   end
 
   it 'creates company profiles' do
+    # Check resutls in Users -> Explore -> by Company Id
     group('test_user_1', 'test_company_1')
     group('test_user_2', 'test_company_2')
     group('test_user_3', 'test_company_3')
   end
 
   it "creates events per company" do
+    # Check resutls in Analysis -> Insights -> by Company Id
+    # For example:
+    #  Show Uniq, Test Event Created
+    #  Should count 3 uniq events, i.e. one per company
     track('test_user_1', 'test_company_1')
 
     track('test_user_2', 'test_company_2')
