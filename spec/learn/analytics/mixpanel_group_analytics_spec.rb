@@ -79,4 +79,25 @@ RSpec.describe 'Mixpanel Group Analytics' do
     track('test_user_5', 'test_company_3')
     track('test_user_6', 'test_company_3')
   end
+
+  it 'creates historical events' do
+    # Check resutls in Analysis -> Insights
+    # In line chart by 'day' should see 1 event for each day:
+    #   1 for today, 1 for yesterday and 1 for day before yesterday
+    [
+      Time.now - (3600 * 24 * 2),
+      Time.now - (3600 * 24),
+      Time.now
+    ].each do |time|
+      puts time.utc.iso8601
+      analytics.track(
+        user_id: 'test_user_1',
+        event: 'Test Event Created',
+        properties: {
+          group_identifier => 'test_company_1'
+        },
+        timestamp: time.utc.iso8601
+      )
+    end
+  end
 end
