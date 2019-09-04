@@ -69,6 +69,15 @@ RSpec.describe 'Mixpanel Group Analytics' do
     group('test_user_1', 'test_company_1', { only_the_trait: 'abc' })
   end
 
+  it 'does not handle nested properties in the company profiles' do
+    # Check resutls in Users -> Explore -> by Company Id
+    # and see if nested_properties has child_property
+    # but it has [object Object] value instead
+    group('test_user_1', 'test_company_1', {
+      nested_properties: { child_property: 'abc' }
+    })
+  end
+
   it "creates events per company" do
     # Check resutls in Analysis -> Insights -> by Company Id
     # For example:
