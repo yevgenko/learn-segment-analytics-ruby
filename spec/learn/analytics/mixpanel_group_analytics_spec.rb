@@ -29,15 +29,13 @@ RSpec.describe 'Mixpanel Group Analytics' do
     )
   end
 
-  def group(user_id, group_id)
+  def group(user_id, group_id, traits = { trait1: rand(1..20), trait2: rand(20..40) })
     analytics.group(
       user_id: user_id,
       group_id: group_id,
-      traits: {
-        group_identifier => group_id,
-        trait1: rand(1..20),
-        trait2: rand(20..40)
-      }
+      traits: traits.merge({
+        group_identifier => group_id
+      })
     )
   end
 
@@ -63,6 +61,12 @@ RSpec.describe 'Mixpanel Group Analytics' do
     group('test_user_1', 'test_company_1')
     group('test_user_2', 'test_company_2')
     group('test_user_3', 'test_company_3')
+  end
+
+  it 'preserves existing company profile properties' do
+    # Check resutls in Users -> Explore -> by Company Id
+    # and see if trait1 and trait2 properties still in there
+    group('test_user_1', 'test_company_1', { only_the_trait: 'abc' })
   end
 
   it "creates events per company" do
